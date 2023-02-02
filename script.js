@@ -4,7 +4,7 @@ let cityTitle = document.querySelector("#city-name")
 let wind = document.querySelector("#wind")
 let temp = document.querySelector("#temp")
 let humidity = document.querySelector("#humidity")
-let today = moment()
+
 let historyDiv = document.querySelector("#history")
 
 let temp1 = document.querySelector("#temp1")
@@ -49,12 +49,12 @@ searchButton.addEventListener("click", search)
 
 
 
-function search(event) {
+function search(event, city) {
 
     event.preventDefault();
 
-    let cityInput = document.querySelector("#search-input").value
-
+    let cityInput = city || document.querySelector("#search-input").value
+    
 
     fetch("https://api.openweathermap.org/geo/1.0/direct?q=" + cityInput + "&appid=107a7d6c443c023117142972cf673c10")
     .then(response => response.json())
@@ -63,6 +63,8 @@ function search(event) {
         let latitude = data[0].lat
         let longitude = data[0].lon
         let cityName = data[0].name
+
+        let today = moment()
 
         cityTitle.textContent = cityName + " (" + today.format("D/MMM/YYYY") + ")"
         cardTitle1.textContent = today.add(1, "day").format("D/MMM/YYYY")
@@ -73,16 +75,25 @@ function search(event) {
 
         console.log(data)
        
+        let history =localStorage.getItem("history") || ""
+        history = history.length ? history.split(",") : []
 
-    
+        if(!history.includes(cityInput)){
+        history.push(cityInput)
+        localStorage.setItem("history", history)
 
         let historyButton = document.createElement("button");
-        
+
+        historyButton.addEventListener("click", (event) => search(event, cityInput))
 
         historyButton.textContent = cityInput
         
 
         historyDiv.appendChild(historyButton);
+    }
+    console.log(history)
+
+        
 
         return fetch(`https://api.openweathermap.org/data/2.5/forecast?lat=${latitude}&lon=${longitude}&appid=107a7d6c443c023117142972cf673c10`)
 
@@ -137,3 +148,31 @@ function search(event) {
  
     
 }
+
+function getHistoryFromLS() {
+
+    let history =localStorage.getItem("history") || ""
+    history = history.length ? history.split(",") : []
+
+for (let i = 0; i < history.length; i++) {
+
+    let historyButton = document.createElement("button");
+
+    historyButton.addEventListener("click", (event) => search(event, history[i]))
+
+    historyButton.textContent = history[i]
+    
+
+    historyDiv.appendChild(historyButton);
+    
+    
+    
+}
+
+    
+}
+
+getHistoryFromLS()
+
+console.log(wind5)
+
